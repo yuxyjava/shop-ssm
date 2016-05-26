@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"   
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="product">
+
+<typeAlias alias="product" type="com.jk.shop.model.product.Product"/>
+
+<insert id="addProduct" parameterClass="product">
+<selectKey keyProperty="id" resultClass="int">
+select SEQ_PRODUCT_ID.nextval from dual
+</selectKey>
+insert into t_product (id, productName, productprice, enterDate, productMainImageUrl, brandId, productDesc)
+values 
+(#id#, #productName#, #price#, to_date(#enterDate#,'yyyy-mm-dd'), #productMainImageUrl#, #brand.id#, #productDesc#)
+</insert>
+
+<sql id="productWhere">
+	<dynamic prepend="where">
+		<isNotEmpty property="productName" prepend="and">
+			productName like '%'||#productName#||'%'
+		</isNotEmpty>
+		<isGreaterThan property="minPrice" prepend="and" compareValue="0">
+			productprice >= #minPrice#
+		</isGreaterThan>
+		<isGreaterThan property="maxPrice" prepend="and" compareValue="0">
+			<isGreaterThan property="maxPrice" compareProperty="minPrice">
+				productprice &lt;= #maxPrice#
+			</isGreaterThan>
+		</isGreaterThan>
+		<isGreaterThan property="brand.id" prepend="and" compareValue="0"> 
+			p.brandId = #brand.id#
+		</isGreaterThan>
+	</dynamic>
+</sql>
+
+<select id="findProductListCount" parameterClass="product" resultClass="long">
+select count(*) from t_product p
+left join t_brand b on p.brandId = b.id
+<include refid="productWhere"/>
+</select>
+
+<select id="findProductPageList" parameterClass="product" resultClass="product">
+select * from (select t.*,rownum rn from (
+select p.id, p.productName, p.productPrice  price,  to_char(p.enterDate,'yyyy-mm-dd') as enterDate,p.productMainImageUrl,b.brandName "brand.brandName" from t_product p
+left join t_brand b on p.brandId = b.id
+<include refid="productWhere"/>
+order by id desc
+) t where <![CDATA[rownum <= #endPos#) where rn > #startPos#]]>
+</select>
+
+<delete id="deleteProduct" parameterClass="int">
+delete from t_product where id = #value#
+</delete>
+
+<select id="findProductById" parameterClass="int" resultClass="product">
+select id, productName, productPrice  price,  to_char(enterDate,'yyyy-mm-dd') as enterDate,productMainImageUrl,productDesc,brandId as "brand.id" from t_product where id = #value#
+</select>
+
+<update id="updateProduct" parameterClass="product">
+update t_product set productName = #productName#,productPrice=#price#,enterDate=to_date(#enterDate#,'yyyy-mm-dd'),productDesc=#productDesc#,brandId=#brand.id#,productMainImageUrl=#productMainImageUrl# where id = #id#
+</update>
+
+<delete id="deleteBatchProduct" parameterClass="list">
+delete from t_product where id in 
+<iterate  conjunction="," open="(" close=")">  
+               #[]#
+</iterate>
+</delete>
+
+
+</sqlMap>

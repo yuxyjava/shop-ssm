@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	<settings cacheModelsEnabled="true" enhancementEnabled="true"
+		lazyLoadingEnabled="false" maxRequests="256" maxSessions="256"
+		maxTransactions="150" useStatementNamespaces="true" />
+	<sqlMap resource="daoxml/product/product.xml" />
+	<sqlMap resource="daoxml/product/productImage.xml" />
+	<sqlMap resource="daoxml/user/user.xml" />
+	<sqlMap resource="daoxml/brand/brand.xml" />
+</sqlMapConfig>
